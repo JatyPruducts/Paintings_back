@@ -1,11 +1,12 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+import math
 
 # Разделяем импорты для ясности
 from app import crud
 from app.models.user import User
-from app.schemas.painting import PaintingInDB, PaintingCreate, PaintingUpdate
+from app.schemas.painting import PaintingInDB, PaintingCreate, PaintingUpdate, TotalPagesResponse
 from app.api import deps
 
 router = APIRouter()
@@ -26,6 +27,22 @@ async def read_paintings(
     return paintings
 
 
+@router.get("/pages/total", response_model=TotalPagesResponse)
+async def get_total_pages(db: AsyncSession = Depends(deps.get_db)):
+    """
+    Получить общее количество страниц с картинами (по 12 на страницу).
+    """
+    page_size = 12
+    total_paintings = await crud.painting.count(db=db)
+
+    # С помощью math.ceil() округляем результат деления вверх
+    # Например, 25 картин / 12 = 2.08 -> 3 страницы
+    # 24 картины / 12 = 2.0 -> 2 страницы
+    total_pages = math.ceil(total_paintings / page_size)
+
+    return {"total_pages": total_pages}
+
+
 @router.get("/{painting_id}", response_model= PaintingInDB)
 async def read_painting_by_id(
         painting_id: int,
@@ -38,6 +55,7 @@ async def read_painting_by_id(
     if db_painting is None:
         raise HTTPException(status_code=404, detail="Painting not found")
     return db_painting
+
 
 
 # --- Защищенные эндпоинты (только для администратора) ---

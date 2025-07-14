@@ -37,3 +37,7 @@ class PaintingInDB(PaintingBase):
     # Эта конфигурация говорит Pydantic, что модель нужно создавать
     # из атрибутов объекта Python (ORM модель SQLAlchemy), а не только из словаря.
     model_config = ConfigDict(from_attributes=True)
+
+
+class TotalPagesResponse(BaseModel):
+    total_pages: int
