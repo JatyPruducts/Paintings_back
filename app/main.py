@@ -16,8 +16,8 @@ app = FastAPI(
 # Настройка CORS
 origins = [
     "http://localhost",
-    "http://localhost:8080",  # Для вашего фронтенда на Vue/React/etc.
-    # Добавьте сюда URL вашего реального фронтенда, когда он будет
+    "http://localhost:8080",
+    "http://localhost:4173",
 ]
 
 app.add_middleware(
