@@ -4,7 +4,7 @@ from typing import List, Union
 
 class ArticleInDB(BaseModel):
     # Поле называется 'article', но его значение будет браться из атрибута 'id'
-    id: int = Field(serialization_alias='article')
+    id: int = Field(serialization_alias='article_code')
 
     # Важно: конфигурация разрешает использовать псевдонимы при генерации ответа
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
