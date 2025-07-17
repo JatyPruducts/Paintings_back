@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
+from .painting import ArticleInDB
 
 # ------------------- Схемы для Обратной Связи -------------------
 
@@ -17,10 +18,6 @@ class FeedbackCreate(FeedbackBase):
 
 
 # Схема для чтения данных об отзыве из БД.
-class FeedbackInDB(FeedbackBase):
-    id: int
+class FeedbackInDB(FeedbackBase, ArticleInDB):
     submitted_at: datetime
     user_session_id: int
-
-    # Разрешаем Pydantic работать с моделями SQLAlchemy.
-    model_config = ConfigDict(from_attributes=True)

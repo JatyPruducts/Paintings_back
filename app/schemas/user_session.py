@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
+from .painting import ArticleInDB
 
 # ------------------- Схемы для Сессии Пользователя -------------------
 
@@ -14,9 +15,5 @@ class UserSessionCreate(UserSessionBase):
 
 
 # Схема для чтения данных о сессии из БД.
-class UserSessionInDB(UserSessionBase):
-    id: int
+class UserSessionInDB(UserSessionBase, ArticleInDB):
     created_at: datetime
-
-    # Разрешаем Pydantic работать с моделями SQLAlchemy.
-    model_config = ConfigDict(from_attributes=True)

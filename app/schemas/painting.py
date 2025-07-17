@@ -1,5 +1,13 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Union
+
+
+class ArticleInDB(BaseModel):
+    # Поле называется 'article', но его значение будет браться из атрибута 'id'
+    id: int = Field(serialization_alias='article')
+
+    # Важно: конфигурация разрешает использовать псевдонимы при генерации ответа
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 # ------------------- Схемы для Картины -------------------
 
@@ -31,12 +39,8 @@ class PaintingUpdate(BaseModel):
 
 # Схема для чтения данных о картине из БД (что сервер отправляет клиенту).
 # Наследуется от базовой схемы и добавляет поля, генерируемые сервером.
-class PaintingInDB(PaintingBase):
-    id: int
-
-    # Эта конфигурация говорит Pydantic, что модель нужно создавать
-    # из атрибутов объекта Python (ORM модель SQLAlchemy), а не только из словаря.
-    model_config = ConfigDict(from_attributes=True)
+class PaintingInDB(PaintingBase, ArticleInDB):
+    pass
 
 
 class TotalPagesResponse(BaseModel):
