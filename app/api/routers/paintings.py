@@ -1,40 +1,68 @@
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Form, File, UploadFile, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 import os
 import shutil
 import uuid
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Form, File, UploadFile
-from sqlalchemy.ext.asyncio import AsyncSession
-import math
-
 from app import crud
 from app.models.user import User
-from app.schemas.painting import PaintingInDB, PaintingCreate, PaintingUpdate, TotalPagesResponse
+from app.schemas.painting import PaintingInDB, PaintingCreate, PaintingUpdate
+from app.schemas.general import TotalCountResponse
 from app.api import deps
 
 router = APIRouter()
 
-# Определяем путь к папке для загрузок
 UPLOADS_DIR = "static/uploads"
-# Создаем папку, если ее нет
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 
-# --- Публичные эндпоинты---
-@router.get("/", response_model=List[PaintingInDB])
+# --- Публичные эндпоинты ---
+
+@router.get("", response_model=List[PaintingInDB]) # Убрали слэш для гибкости
 async def read_paintings(
-        db: AsyncSession = Depends(deps.get_db),
-        skip: int = 0,
-        limit: int = 12
+    db: AsyncSession = Depends(deps.get_db),
+    skip: int = 0,
+    limit: int = 12,
+    title: Optional[str] = Query(None, description="Фильтр по названию картины"),
+    # `Query(None)` позволяет FastAPI принимать строку и преобразовывать ее в список
+    tags: Optional[List[str]] = Query(None, description="Фильтр по тегам (через запятую)"),
+    width_min: Optional[float] = Query(None, alias="width_min"),
+    width_max: Optional[float] = Query(None, alias="width_max"),
+    height_min: Optional[float] = Query(None, alias="height_min"),
+    height_max: Optional[float] = Query(None, alias="height_max"),
 ):
-    paintings = await crud.painting.get_multi(db, skip=skip, limit=limit)
+    """
+    Получить список картин с фильтрацией и пагинацией.
+    """
+    paintings = await crud.painting.get_multi_filtered(
+        db, skip=skip, limit=limit, title=title, tags=tags,
+        width_min=width_min, width_max=width_max,
+        height_min=height_min, height_max=height_max
+    )
     return paintings
 
-@router.get("/pages/total", response_model=TotalPagesResponse)
-async def get_total_pages(db: AsyncSession = Depends(deps.get_db)):
-    page_size = 12
-    total_paintings = await crud.painting.count(db=db)
-    total_pages = math.ceil(total_paintings / page_size)
-    return {"total_pages": total_pages}
+
+# НОВЫЙ ЭНДПОИНТ ДЛЯ ПОДСЧЕТА
+@router.get("/count", response_model=TotalCountResponse)
+async def get_paintings_count(
+    db: AsyncSession = Depends(deps.get_db),
+    title: Optional[str] = Query(None, description="Фильтр по названию картины"),
+    tags: Optional[List[str]] = Query(None, description="Фильтр по тегам (через запятую)"),
+    width_min: Optional[float] = Query(None, alias="width_min"),
+    width_max: Optional[float] = Query(None, alias="width_max"),
+    height_min: Optional[float] = Query(None, alias="height_min"),
+    height_max: Optional[float] = Query(None, alias="height_max"),
+):
+    """
+    Получить общее количество картин с учетом фильтров.
+    """
+    total = await crud.painting.count_filtered(
+        db, title=title, tags=tags,
+        width_min=width_min, width_max=width_max,
+        height_min=height_min, height_max=height_max
+    )
+    return {"total": total}
+
 
 @router.get("/{painting_id}", response_model=PaintingInDB)
 async def read_painting_by_id(
@@ -45,6 +73,15 @@ async def read_painting_by_id(
     if db_painting is None:
         raise HTTPException(status_code=404, detail="Painting not found")
     return db_painting
+
+
+@router.get("/tags/all", response_model=List[str])
+async def get_all_unique_tags(db: AsyncSession = Depends(deps.get_db)):
+    """
+    Получить плоский список всех уникальных тегов из всех картин.
+    """
+    tags = await crud.painting.get_all_tags(db=db)
+    return tags
 
 
 # --- Защищенные эндпоинты (модифицированы) ---
