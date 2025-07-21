@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.staticfiles import StaticFiles
 # Импортируем наши роутеры
 from app.api.routers import auth as auth_router
 from app.api.routers import paintings as paintings_router
@@ -18,6 +18,7 @@ origins = [
     "http://localhost",
     "http://localhost:8080",
     "http://localhost:4173",
+    "http://localhost:5173"
 ]
 
 app.add_middleware(
@@ -37,3 +38,5 @@ app.include_router(feedback_router.router, prefix="/api/feedback", tags=["Feedba
 @app.get("/")
 def read_root():
     return {"message": "Welcome to ArtGallery API"}
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
