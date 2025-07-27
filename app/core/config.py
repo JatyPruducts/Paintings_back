@@ -5,6 +5,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    TELEGRAM_BOT_TOKEN: str
+    TELEGRAM_CHAT_ID: int
+
     class Config:
         env_file = ".env"
 

@@ -19,7 +19,7 @@ class CRUDUser(CRUDBase[User, BaseModel, BaseModel]):
         if not user:
             return None
 
-        # Шаг 2: Синхронно проверяем пароль.
+        # Шаг 2: проверяем пароль.
         # Хеширование - это CPU-bound операция, ей await не нужен.
         if not verify_password(password, user.hashed_password):
             return None

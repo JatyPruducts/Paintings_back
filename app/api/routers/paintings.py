@@ -18,7 +18,7 @@ os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 # --- Публичные эндпоинты ---
 
-@router.get("", response_model=List[PaintingInDB]) # Убрали слэш для гибкости
+@router.get("", response_model=List[PaintingInDB]) # Убрал слэш для гибкости
 async def read_paintings(
     db: AsyncSession = Depends(deps.get_db),
     skip: int = 0,
@@ -42,7 +42,6 @@ async def read_paintings(
     return paintings
 
 
-# НОВЫЙ ЭНДПОИНТ ДЛЯ ПОДСЧЕТА
 @router.get("/count", response_model=TotalCountResponse)
 async def get_paintings_count(
     db: AsyncSession = Depends(deps.get_db),
@@ -86,7 +85,7 @@ async def get_all_unique_tags(db: AsyncSession = Depends(deps.get_db)):
 
 # --- Защищенные эндпоинты (модифицированы) ---
 
-@router.post("/", response_model=PaintingInDB, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=PaintingInDB, status_code=status.HTTP_201_CREATED)
 async def create_painting(
         *,
         db: AsyncSession = Depends(deps.get_db),
