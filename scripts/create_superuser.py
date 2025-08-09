@@ -2,7 +2,16 @@ import asyncio
 import argparse
 import sys
 from pathlib import Path
+from pathlib import Path
+from dotenv import load_dotenv
+import sys
 
+# путь к корню проекта (родитель папки scripts)
+project_root = Path(__file__).parent.parent
+load_dotenv(project_root / ".env")   # <- подхватит твой .env
+
+# опционально, добавить корень в sys.path если нужен импорт app
+sys.path.append(str(project_root))
 # --- Настройка пути для импорта из папки 'app' ---
 # Этот скрипт находится вне папки 'app', поэтому Python по умолчанию не сможет
 # найти модули вроде 'app.db'. Этот код добавляет корневую папку проекта

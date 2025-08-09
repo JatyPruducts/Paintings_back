@@ -26,7 +26,7 @@ class CRUDPainting(CRUDBase[Painting, PaintingCreate, PaintingUpdate]):
         if tags:
             # .contains для поиска в массивах PostgreSQL.
             # Он проверяет, содержит ли массив `tags` в БД ВСЕ теги из списка.
-            query = query.filter(self.model.tags.contains(tags))
+            query = query.filter(self.model.tags.overlap(tags))
 
         if width_min is not None:
             query = query.filter(self.model.width >= width_min)
